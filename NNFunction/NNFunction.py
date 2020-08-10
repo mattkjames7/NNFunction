@@ -260,21 +260,25 @@ class NNFunction(object):
 			ipt.append(b[i])
 		self.model[k].set_weights(ipt)
 		
-	def Save(self,path='',fname=None,Best=False):
+	def Save(self,fname=None,Best=False,ferr=None):
 		'''
 		Saves artificial neural network(s) to file(s)
 		'''
 		#get the file name
-		if not os.path.isdir(path) and path != '':
-			os.system('mkdir -pv '+path)
 		if fname is None:
 			fname = ''
 			for s in self.s:
 				fname += '_{:d}'.format(s)
 			fname = fname[1:]
+		else:
+			p = fname.rfind('/')
+			path = fname[:p]
+			if not os.path.isdir(path) and path != '':
+				os.system('mkdir -pv '+path)
+		
 		if not fname[-4:] == '.bin':
 			 fname += '.bin'
-		fout = path + fname
+		fout = fname
 		
 		#choose whether to save all anns or just the best
 		if self.k == 1 and not Best:
@@ -294,7 +298,8 @@ class NNFunction(object):
 			use = np.argmin(J)
 			
 			#get previous tests
-			ferr = fname[:-4]+'.err'
+			if ferr is None:
+				ferr = fname[:-4]+'.err'
 			errors = self._GetTests(ferr)
 			
 			#check if the newest error is less then the rest
@@ -306,7 +311,7 @@ class NNFunction(object):
 				savenet = False			
 			
 			#save tests
-			self.SaveTests(path,ferr)
+			self.SaveTests(ferr)
 			
 			if savenet:
 				self._SaveANN(use,fout)
@@ -315,18 +320,21 @@ class NNFunction(object):
 			for k in range(0,self.k):
 				self._SaveANN(k,fout+'.{:01d}'.format(k))
 				
-	def SaveTests(self,path,fname=None):
+	def SaveTests(self,fname=None):
 		#get the file name
-		if not os.path.isdir(path) and path != '':
-			os.system('mkdir -pv '+path)
 		if fname is None:
 			fname = ''
 			for s in self.s:
 				fname += '_{:d}'.format(s)
 			fname = fname[1:]
+		else:
+			p = fname.rfind('/')
+			path = fname[:p]
+			if not os.path.isdir(path) and path != '':
+				os.system('mkdir -pv '+path)
 		if not fname[-4:] == '.err':
 			fname += '.err'
-		fout = path + fname		
+		fout = fname		
 		
 		self._SaveTest(fout)
 	
