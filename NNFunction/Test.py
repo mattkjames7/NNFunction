@@ -109,42 +109,24 @@ def Func8(x):
 	f7 = np.exp(0.1*x**2)
 	return np.array([f0,f1,f2,f3,f4,f5,f6,f7]).T
 
-def Test8FunctionFit(Hidden=[4,6],nEpoch=500):
+def Test8FunctionFit(Hidden=[12,6,4],nEpoch=500,kfolds=1,k=0):
 	
 	s = [1] + Hidden + [8]
 	
 	model = NNFunction(s,'softplus')
 	model.CreateData(Func8)
+	model.CreateTestData(Func8)
 
-	model.Train(nEpoch)
+	model.Train(nEpoch,kfolds=kfolds)
 	
 	plt.figure()
 	colors = ['red','green','blue','black','orange','purple','cyan','gray']
 	
 	x = np.linspace(-5.0,5.0,100)
-	p = model.Predict(x,False)
+	p = model.Predict(x,False,k=k)
 	for i in range(0,8):
 		plt.plot(x,model.y.T[i],color=colors[i],linestyle='-')
 		plt.plot(x,p.T[i],color=colors[i],linestyle='--')
 	
 	return model
 
-def Test8FunctionFitPNN(Hidden=[4,6],nEpoch=1500):
-	
-	s = [1] + Hidden + [8]
-	
-	model = NNFunctionPNN(s,'softplus')
-	model.CreateData(Func8)
-
-	model.Train(nEpoch)
-	
-	plt.figure()
-	colors = ['red','green','blue','black','orange','purple','cyan','gray']
-	
-	x = np.linspace(-5.0,5.0,100)
-	p = model.Predict(x,False)
-	for i in range(0,8):
-		plt.plot(x,model.y.T[i],color=colors[i],linestyle='-')
-		plt.plot(x,p[i],color=colors[i],linestyle='--')
-		
-	return model
