@@ -289,7 +289,6 @@ class NNFunction(object):
 			#choose the best performing ann
 			if not self.test is None:
 				for k in range(0,self.k):
-					print(k)
 					J[k] = self.Test(k=k)
 			else:
 				for k in range(0,self.k):
