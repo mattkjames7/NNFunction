@@ -254,6 +254,9 @@ class NNFunction(object):
 		return w,b
 		
 	def SetWeights(self,w,b,k=0):
+		if self.model is None:
+			self.model = [self._CreateModel()]
+
 		ipt = []
 		for i in range(0,self.L-1):
 			ipt.append(w[i])
