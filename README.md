@@ -81,11 +81,7 @@ net.Save(fname='networkname.bin')
 net = nnf.LoadANN(fname='networkname.bin')
 ```
 
-
-
-
-
-
+The animation below demonstrates the training of a neural network used to reproduce four different functions simultaneously. It was produced using `NNFunction.TrainNN4`.
 
 ![](nn.gif)
 
