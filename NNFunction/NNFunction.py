@@ -9,7 +9,31 @@ import matplotlib.pyplot as plt
 
 class NNFunction(object):
 	def __init__(self,s,AF='softplus',Output='linear',Loss='mean_squared_error'):
-	
+		'''
+		This object is used to train a neural network to reproduce 
+		non-linear functions.
+		
+		Inputs
+		======
+		s : int
+			Integer array defining the number of nodes in each layer,
+			where s[0] is the input layer, s[-1] is the output layer,
+			and s[1:-1] are the hidden layers.
+		AF : str
+			This defines the activation functions which will be used for
+			the hidden layers. Can be:
+			'softplus'|'relu'|'LeakyReLU'|'sigmoid'|'softmax'|'softplus'
+			'softsign'|'tanh'|'selu'|'elu'|'linear'
+		Output : str
+			Output layer activation functions - same as those for AF.
+		Loss : str
+			The loss function
+			'mean_squared_error'|'mean_absolute_error' - see Keras
+			documentation for more.
+
+			
+		
+		'''
 		#store some defining parameters
 		self.L = np.size(s)
 		self.s = s
@@ -62,6 +86,25 @@ class NNFunction(object):
 		return model
 	
 	def CreateData(self,Func,Range=[-5.0,5.0],RescaleY=True,n=100):
+		'''
+		This function is mostly used for testing - it can be used to 
+		generate training data given a callable function.
+		
+		Inputs
+		======
+		Func : callable
+			Function which accepts a 2D array (matrix) of input features
+			which would be used to train the network.
+		Range : list
+			2-element list which defines the range of X input values.
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1
+		n : int
+			The number of samples to create.
+		
+		
+		'''
+		
 		X = np.linspace(Range[0],Range[1],n)
 		y = Func(X)
 		
@@ -79,6 +122,25 @@ class NNFunction(object):
 		self.AddData(X,y,RescaleY)	
 
 	def CreateTestData(self,Func,Range=[-5.0,5.0],RescaleY=True,n=100):
+		'''
+		This function is mostly used for testing - it does the same as
+		CreateData, but this creates data to be used as a test set.
+		
+		Inputs
+		======
+		Func : callable
+			Function which accepts a 2D array (matrix) of input features
+			which would be used to train the network.
+		Range : list
+			2-element list which defines the range of X input values.
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1
+		n : int
+			The number of samples to create.
+		
+		
+		'''
+
 		X = np.linspace(Range[0],Range[1],n)
 		y = Func(X)
 		
@@ -98,7 +160,26 @@ class NNFunction(object):
 		
 	def AddData(self,X,y,RescaleY=True,SampleWeights=None):
 		'''
-		Input shape (m,n)
+		Add training data matrices to the object.
+		
+		NOTE: When using kfolds > 1 during training, this will be split
+		into training and validation sets.
+		
+		Inputs
+		======
+		X : float
+			Input matrix, shape (m,n), where m is the number of samples
+			and n is the number of input nodes (==s[0])
+		y : float
+			Hypothesis matrix, shape (m,k), m is the number of samples
+			and k is the number of output nodes (==s[-1])
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1
+		SampleWeights : None|float
+			If None - all samples are weighted equally, otherwise set to
+			an array with shape (m,), defining the weight of each 
+			individual sample.
+
 		'''
 		if np.size(X.shape) == 1:
 			self.X = np.array([X]).T
@@ -124,7 +205,23 @@ class NNFunction(object):
 	
 	def AddValidationData(self,X,y,RescaleY=True):
 		'''
-		Input shape (m,n)
+		Add validaton data matrices to the object.
+		
+		NOTE - if using kfolds > 1 when training, these data will not be
+		used. The Validation will come from the training matrices 
+		instead.
+		
+		Inputs
+		======
+		X : float
+			Input matrix, shape (m,n), where m is the number of samples
+			and n is the number of input nodes (==s[0])
+		y : float
+			Hypothesis matrix, shape (m,k), m is the number of samples
+			and k is the number of output nodes (==s[-1])
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1
+
 		'''
 		if np.size(X.shape) == 1:
 			self.Xcv = np.array([X]).T
@@ -142,7 +239,21 @@ class NNFunction(object):
 		
 	def AddTestData(self,X,y,RescaleY=True):
 		'''
-		Input shape (m,n)
+		Add test data matrices to the object.
+		
+		NOTE - These data are ONLY used for testing, not for training.
+		
+		Inputs
+		======
+		X : float
+			Input matrix, shape (m,n), where m is the number of samples
+			and n is the number of input nodes (==s[0])
+		y : float
+			Hypothesis matrix, shape (m,k), m is the number of samples
+			and k is the number of output nodes (==s[-1])
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1
+
 		'''
 		if np.size(X.shape) == 1:
 			self.Xts = np.array([X]).T
@@ -160,7 +271,29 @@ class NNFunction(object):
 
 		
 	def Train(self,nEpoch,BatchSize=None,verbose=1,kfolds=1):
+		'''
+		Train the network using the provided datasets.
 		
+		Inputs
+		======
+		nEpoch : int
+			The total number of epochs.
+		BatchSize : None|int
+			The size of each mini-batch to be used during training. 
+		verbose : int
+			As in keras: 0 = silent; 1 = progress bar; 2 = a line per
+			epoch.
+		kfolds : int
+			Number of kfolds to do.
+			By default is it 1 - this will use separate training and 
+			validation data sets where available; only one self.Model is 
+			created.
+			When kfolds > 1 - this will only use data added using the
+			AddData method, where the data will be split into kfolds 
+			equal sets. Each of these sets will take turns being the 
+			validation set, and results in kfolds networks in self.Model
+		
+		'''
 		#initialize model upon first train, in case we decide to do
 		#k-folds or not
 		if self.model is None:
@@ -213,6 +346,24 @@ class NNFunction(object):
 		return self.hist
 		
 	def Predict(self,X,RescaleY=True,k=0):
+		'''
+		Predict the output of the neural network given an input array.
+		
+		Inputs
+		======
+		X : float
+			Input matrix, shape (m,n), where m is the number of samples
+			and n is the number of input nodes (==s[0])
+		RescaleY : bool
+			Rescale the outputs of Func to be within the range -1 < y < 1	
+		
+		Returns
+		=======
+		y : float
+			Output array from the network, shape (m,k) where m is the 
+			number of samples and k is the number of output nodes.
+		
+		'''
 		if np.size(X.shape) == 1:
 			x = np.array([X]).T
 		else:
@@ -224,7 +375,23 @@ class NNFunction(object):
 	
 	def Test(self,X=None,y=None,k=0):
 		'''
-		Test the ANN
+		Test the ANN on a set of test inputs and outputs.
+		
+		Inputs
+		======
+		X : float
+			Input matrix, shape (m,n), where m is the number of samples
+			and n is the number of input nodes (==s[0])
+		y : float
+			Hypothesis matrix, shape (m,k), m is the number of samples
+			and k is the number of output nodes (==s[-1])
+		k : int
+			The network to test.
+			
+		Returns
+		=======
+		out : float
+			Cost function output.
 		'''
 		if X is None and not self.test is None:
 			Xt = self.test[0]
@@ -245,6 +412,22 @@ class NNFunction(object):
 			
 	
 	def GetWeights(self,k=0):
+		'''
+		Retreive the weight and bias matrics from a network.
+		
+		Inputs
+		======
+		k : int
+			Network index.
+			
+		Returns
+		=======
+		w : list
+			list of 2D wight matrices
+		b : list
+			list of bias matrices
+		
+		'''
 		w = []
 		b = []
 		tmp = self.model[k].get_weights()
@@ -254,6 +437,20 @@ class NNFunction(object):
 		return w,b
 		
 	def SetWeights(self,w,b,k=0):
+		'''
+		Set the weight and bias matrics for a network.
+		
+		Inputs
+		======
+		w : list
+			list of 2D wight matrices
+		b : list
+			list of bias matrices
+		k : int
+			Network index.
+	
+		'''
+
 		if self.model is None:
 			self.model = [self._CreateModel()]
 
@@ -266,6 +463,17 @@ class NNFunction(object):
 	def Save(self,fname=None,Best=False,ferr=None):
 		'''
 		Saves artificial neural network(s) to file(s)
+		
+		Inputs
+		======
+		fname : str
+			Full path and name of file to be saved
+		Best : bool
+			If True, the best of the networks will be the only one saved
+		ferr : None|str
+			Name of the file to store test scores in.
+		
+	
 		'''
 		#get the file name
 		if fname is None:
@@ -323,6 +531,15 @@ class NNFunction(object):
 				self._SaveANN(k,fout+'.{:01d}'.format(k))
 				
 	def SaveTests(self,fname=None):
+		'''
+		Save the test scores to file.
+		
+		Inputs
+		======
+		fname : None|str
+			Name of output file.
+		
+		'''
 		#get the file name
 		if fname is None:
 			fname = ''
@@ -342,6 +559,20 @@ class NNFunction(object):
 	
 	
 	def _GetTests(self,fname):
+		'''
+		Read the test scores from file.
+		
+		Inputs
+		======
+		fname : str
+			File name and path
+		
+		Returns
+		=======
+		err : float
+			numpy.ndarray of test scores
+		
+		'''
 		try:
 			f = open(fname,'rb')
 			errors = np.fromfile(f,dtype='float32')
@@ -351,7 +582,15 @@ class NNFunction(object):
 		return errors
 				
 	def _SaveTest(self,fname):
+		'''
+		Save the test scores to file.
 		
+		Inputs
+		======
+		fname : str
+			File name and path		
+		
+		'''
 		err = [0]*self.k
 
 		if not self.test is None:
@@ -374,7 +613,17 @@ class NNFunction(object):
 		
 				
 	def _SaveANN(self,k,fname):
-
+		'''
+		Saves artificial neural network to file
+		
+		Inputs
+		======
+		k : int
+			Network array index
+		fname : str
+			Full path and name of file to be saved		
+		
+		'''
 		print('Saving {:s}'.format(fname))
 		#save the network
 		#return the weights
@@ -393,7 +642,22 @@ class NNFunction(object):
 		
 
 	def PlotCost(self,k=0,fig=None,maps=[1,1,0,0]):
+		'''
+		Plot the cost function for a trained network.
 		
+		Inputs
+		======
+		k : int
+			Network index
+		fig : obj|None
+			If None, a new figure will be created; if it is an instance
+			of matplotlib.pyplot then a new subplot will be created on 
+			the current figure; if it is an instance of pylot.Axes, then
+			the current axes will be used.
+		maps:
+			Grid location on the plot: [xmaps,ymaps,xmap,ymap]
+		
+		'''
 		if fig is None:
 			fig = plt
 			fig.figure()
