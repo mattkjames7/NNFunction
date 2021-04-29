@@ -304,7 +304,9 @@ class NNFunction(object):
 					self.model.append(self._CreateModel())
 				self.Jt = [np.array([],dtype='float32')]*self.k
 				self.Jc = [np.array([],dtype='float32')]*self.k
-				self.hist = [object]*self.k			
+				self.hist = np.zeros(self.k,dtype='object')
+				for i in range(0,self.k):
+					self.hist[i] = []			
 
 	def Train(self,nEpoch,BatchSize=None,verbose=1,kfolds=1):
 		'''
@@ -360,7 +362,7 @@ class NNFunction(object):
 
 				self.Jt[k] = np.append(self.Jt[k],hist.history['loss'])
 				self.Jc[k] = np.append(self.Jc[k],hist.history['val_loss'])
-				self.hist[k] = hist
+				self.hist[k].append(hist)
 				k+=1
 		return self.hist
 		
