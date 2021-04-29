@@ -12,7 +12,7 @@ def getversion():
 	'''
 	#get the init file path
 	thispath = os.path.abspath(os.path.dirname(__file__))+'/'
-	initfile = thispath + 'FieldTracing/__init__.py'
+	initfile = thispath + 'NNFunction/__init__.py'
 	
 	#read the file in
 	f = open(initfile,'r')
