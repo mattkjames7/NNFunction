@@ -113,7 +113,7 @@ def TrainNN4(outpath='$HOME/NNAnim/NN4/',steps=5000,savestep=100):
 		Estr = 'Epochs: {:4d}'.format(Epochs)	
 		ax4.text(0.95,0.9,Estr,ha='right',va='center',transform=ax4.transAxes)
 
-		err = np.append(err,model.model[0].history.history['loss'])
+		err = np.append(err,model.model.history.history['loss'])
 		ax4.plot(err,color='grey')	
 		fig.savefig(outpath+'NN{:05d}.png'.format(i+1))
 

@@ -294,7 +294,7 @@ class NNFunction(object):
 				self.model = [self._CreateModel()]
 				self.Jt = [np.array([],dtype='float32')]
 				self.Jc = [np.array([],dtype='float32')]
-				self.hist = [[]]
+				self.hist = []
 				if kfolds != 1:
 					print('Validation data defined, using single k-fold')
 			else:
@@ -302,10 +302,10 @@ class NNFunction(object):
 				self.model = []
 				for i in range(0,self.k):
 					self.model.append(self._CreateModel())
-				self.Jt = [np.array([],dtype='float32')]*5
-				self.Jc = [np.array([],dtype='float32')]*5	
-				self.hist = [[]]*5				
-				
+				self.Jt = [np.array([],dtype='float32')]*self.k
+				self.Jc = [np.array([],dtype='float32')]*self.k
+				self.hist = [object]*self.k			
+
 	def Train(self,nEpoch,BatchSize=None,verbose=1,kfolds=1):
 		'''
 		Train the network using the provided datasets.
@@ -339,7 +339,7 @@ class NNFunction(object):
 			self.Jt[0] = np.append(self.Jt[0],hist.history['loss'])
 			if not self.val is None:
 				self.Jc[0] = np.append(self.Jc[0],hist.history['val_loss'])
-			self.hist[0].append(hist)
+			self.hist.append(hist)
 		else:
 			kf = KFold(n_splits=self.k)
 			k = 0
@@ -360,7 +360,7 @@ class NNFunction(object):
 
 				self.Jt[k] = np.append(self.Jt[k],hist.history['loss'])
 				self.Jc[k] = np.append(self.Jc[k],hist.history['val_loss'])
-				self.hist[k].append(hist)
+				self.hist[k] = hist
 				k+=1
 		return self.hist
 		
