@@ -269,7 +269,43 @@ class NNFunction(object):
 		self.yts = (self.yts - self.scale1) * self.scale0
 		self.test = (self.Xts,self.yts)
 
+	def _InitNetwork(self,kfolds):
+		'''
+		Initialize the network(s).
 		
+		Inputs
+		======
+		kfolds : int
+			Number of kfolds to do.
+			By default is it 1 - this will use separate training and 
+			validation data sets where available; only one self.Model is 
+			created.
+			When kfolds > 1 - this will only use data added using the
+			AddData method, where the data will be split into kfolds 
+			equal sets. Each of these sets will take turns being the 
+			validation set, and results in kfolds networks in self.Model
+				
+		'''
+		#initialize model upon first train, in case we decide to do
+		#k-folds or not
+		if self.model is None:
+			if not self.val is None or kfolds == 1:
+				self.k = 1
+				self.model = [self._CreateModel()]
+				self.Jt = [np.array([],dtype='float32')]
+				self.Jc = [np.array([],dtype='float32')]
+				self.hist = [[]]
+				if kfolds != 1:
+					print('Validation data defined, using single k-fold')
+			else:
+				self.k = kfolds
+				self.model = []
+				for i in range(0,self.k):
+					self.model.append(self._CreateModel())
+				self.Jt = [np.array([],dtype='float32')]*5
+				self.Jc = [np.array([],dtype='float32')]*5	
+				self.hist = [[]]*5				
+				
 	def Train(self,nEpoch,BatchSize=None,verbose=1,kfolds=1):
 		'''
 		Train the network using the provided datasets.
@@ -294,26 +330,9 @@ class NNFunction(object):
 			validation set, and results in kfolds networks in self.Model
 		
 		'''
-		#initialize model upon first train, in case we decide to do
-		#k-folds or not
-		if self.model is None:
-			if not self.val is None or kfolds == 1:
-				self.k = 1
-				self.model = [self._CreateModel()]
-				self.Jt = [np.array([],dtype='float32')]
-				self.Jc = [np.array([],dtype='float32')]
-				self.hist = [[]]
-				if kfolds != 1:
-					print('Validation data defined, using single k-fold')
-			else:
-				self.k = kfolds
-				self.model = []
-				for i in range(0,self.k):
-					self.model.append(self._CreateModel())
-				self.Jt = [np.array([],dtype='float32')]*5
-				self.Jc = [np.array([],dtype='float32')]*5	
-				self.hist = [[]]*5				
-		
+		#intialize the networks
+		self._InitNetwork(kfolds)
+
 		#now we can train the network(s)
 		if self.k == 1:
 			hist = self.model[0].fit(self.X,self.y,epochs=nEpoch,batch_size=BatchSize,validation_data=self.val,verbose=verbose,sample_weight=self.SampleWeights)

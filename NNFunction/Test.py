@@ -17,6 +17,7 @@ def _GetNN4():
 
 	model = NNFunction(s,'softplus')
 	model.CreateData(Func4)
+	model._InitNetwork(1)
 	
 	return model	
 
@@ -62,7 +63,25 @@ def _PlotModels(ax0,ax1,ax2,ax3,model,x):
 	ax3.scatter(x,model.y.T[3],color='blue')
 	ax3.plot(x,p.T[3],color='blue',linestyle='-')	
 
-def TrainNN4(outpath='~/NNAnim/NN4/',steps=5000,savestep=100):
+def TrainNN4(outpath='$HOME/NNAnim/NN4/',steps=5000,savestep=100):
+	'''
+	Save a bunch of images demonstrating the training of a neural 
+	network.
+	
+	Inputs
+	======
+	outpath : str
+		Output directory which will contain the images
+	steps : int
+		The number of epochs in total
+	savestep : int
+		The number of epochs between each image saved
+	
+	'''
+	if '$HOME' in outpath:
+		outpath = outpath.replace('$HOME',os.getenv('HOME'))
+	if '~' in outpath:
+		outpath = outpath.replace('~',os.getenv('HOME'))
 	
 	if not os.path.isdir(outpath):
 		os.system('mkdir -pv '+outpath)
@@ -94,7 +113,7 @@ def TrainNN4(outpath='~/NNAnim/NN4/',steps=5000,savestep=100):
 		Estr = 'Epochs: {:4d}'.format(Epochs)	
 		ax4.text(0.95,0.9,Estr,ha='right',va='center',transform=ax4.transAxes)
 
-		err = np.append(err,model.model.history.history['loss'])
+		err = np.append(err,model.model[0].history.history['loss'])
 		ax4.plot(err,color='grey')	
 		fig.savefig(outpath+'NN{:05d}.png'.format(i+1))
 
@@ -110,7 +129,22 @@ def Func8(x):
 	return np.array([f0,f1,f2,f3,f4,f5,f6,f7]).T
 
 def Test8FunctionFit(Hidden=[12,6,4],nEpoch=500,kfolds=1,k=0):
+	'''
+	Run a quick test on the NNFunction object.
 	
+	Inputs
+	======
+	Hidden : list
+		List of the number of nodes in each hidden layer.
+	nEpoch : int
+		Number of epochs to train over.
+	kfolds : int
+		number of k-folds to train over
+	k : int
+		Netork index to plot.
+		
+	
+	'''
 	s = [1] + Hidden + [8]
 	
 	model = NNFunction(s,'softplus')
