@@ -377,6 +377,8 @@ class NNFunction(object):
 			and n is the number of input nodes (==s[0])
 		RescaleY : bool
 			Rescale the outputs of Func to be within the range -1 < y < 1	
+		k : int
+			Model index.
 		
 		Returns
 		=======
