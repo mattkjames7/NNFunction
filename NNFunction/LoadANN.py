@@ -50,6 +50,7 @@ def LoadANN(fname,ReturnModel=True,ReadCost=True):
 	scale1 = pf.ArrayFromFile('float32',f)
 	w = pf.ListArrayFromFile('float32',f)
 	b = pf.ListArrayFromFile('float32',f)
+
 	if ReadCost:
 		try:
 			Jt = pf.ArrayFromFile('float32',f)

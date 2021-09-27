@@ -664,7 +664,7 @@ class NNFunction(object):
 		f.close()
 		
 
-	def PlotCost(self,k=0,fig=None,maps=[1,1,0,0]):
+	def PlotCost(self,k=0,fig=None,maps=[1,1,0,0],ylog=False):
 		'''
 		Plot the cost function for a trained network.
 		
@@ -677,8 +677,10 @@ class NNFunction(object):
 			of matplotlib.pyplot then a new subplot will be created on 
 			the current figure; if it is an instance of pylot.Axes, then
 			the current axes will be used.
-		maps:
+		maps :
 			Grid location on the plot: [xmaps,ymaps,xmap,ymap]
+		ylog : bool
+			If True, the y-axis of the plot will be logarithmic
 		
 		'''
 		if fig is None:
@@ -694,7 +696,11 @@ class NNFunction(object):
 		
 		ax.set_xlim(0,self.Jt[k].size)
 		yl = ax.get_ylim()
-		ax.set_ylim(0,yl[-1])
+		if ylog:
+			ax.set_ylim(yl)
+			ax.set_yscale('log')
+		else:
+			ax.set_ylim(0,yl[-1])
 		
 		ax.set_xlabel('Epoch')
 		ax.set_ylabel('Cost')
