@@ -693,12 +693,13 @@ class NNFunction(object):
 			
 		ax.plot(self.Jt[k],color='blue',label='$J_t$')
 		ax.plot(self.Jc[k],color='red',label='$J_c$')
+		if ylog:
+			ax.set_yscale('log')
 		
 		ax.set_xlim(0,self.Jt[k].size)
 		yl = ax.get_ylim()
 		if ylog:
 			ax.set_ylim(yl)
-			ax.set_yscale('log')
 		else:
 			ax.set_ylim(0,yl[-1])
 		
