@@ -294,7 +294,7 @@ class NNFunction(object):
 				self.model = [self._CreateModel()]
 				self.Jt = [np.array([],dtype='float32')]
 				self.Jc = [np.array([],dtype='float32')]
-				self.hist = []
+				self.hist = [[]]
 				if kfolds != 1:
 					print('Validation data defined, using single k-fold')
 			else:
